@@ -8,6 +8,7 @@ const dotenv = require("dotenv").config();
 const cookieParser = require("cookie-parser");
 const passport = require("passport");
 const setupSwagger = require("./docs/swagger");
+const route = require("./routes/routes");
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -19,8 +20,11 @@ app.use(
     resave: false,
   })
 );
+app.use(cors());
 app.use(passport.initialize());
 app.use(passport.session());
+// the routings
+app.use(route);
 
 //swagger setup
 setupSwagger(app);
