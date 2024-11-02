@@ -7,6 +7,7 @@ const session = require("express-session"); // Updated import
 const dotenv = require("dotenv").config();
 const cookieParser = require("cookie-parser");
 const passport = require("passport");
+const setupSwagger = require("./docs/swagger");
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -20,6 +21,18 @@ app.use(
 );
 app.use(passport.initialize());
 app.use(passport.session());
+
+//swagger setup
+setupSwagger(app);
+const URI = process.env.MONGODB_URI;
+mongoose.connect(URI);
+const database = mongoose.connection;
+database.on("error", () => {
+  console.log("Error connecting with the database");
+});
+database.once("open", () => {
+  console.log("Connected to the database successfully");
+});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
