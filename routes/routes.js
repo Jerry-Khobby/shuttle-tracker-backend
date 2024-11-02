@@ -4,20 +4,20 @@ const googleAuthControllers = require("../controllers/google-auth");
 const passport = require("passport");
 // Route to initiate GitHub login
 router.get(
-  "/auth/github",
-  passport.authenticate("github", { scope: ["user:email"] })
+  "/auth/google",
+  passport.authenticate("google", { scope: ["profile", "email"] })
 );
 
 // Route for GitHub callback
-router.get("/auth/github/callback", googleAuthControllers.googleCallback);
+router.get("/auth/google/callback", googleAuthControllers.googleCallback);
 
 // Route for success page
-router.get("/auth/github/success", googleAuthControllers.googleSuccess);
+router.get("/auth/google/success", googleAuthControllers.googleSuccess);
 
 // Route for error page
-router.get("/auth/github/error", googleAuthControllers.googleError);
+router.get("/auth/google/error", googleAuthControllers.googleError);
 
 // Route for signout
-router.get("/auth/github/signout", googleAuthControllers.googleSignOut);
+router.get("/auth/google/signout", googleAuthControllers.googleSignOut);
 
 module.exports = router;
