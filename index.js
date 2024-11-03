@@ -9,6 +9,7 @@ const cookieParser = require("cookie-parser");
 const passport = require("passport");
 const setupSwagger = require("./docs/swagger");
 const route = require("./routes/routes");
+require("./middlewares/blackdb-cleaner");
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
