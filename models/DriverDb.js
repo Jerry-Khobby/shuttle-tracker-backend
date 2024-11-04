@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const DriversRegistrationSchema = new mongoose.Schema(
   {
-    firstname: {
+    firstName: {
       type: String,
       required: true,
       trim: true,
@@ -17,7 +17,7 @@ const DriversRegistrationSchema = new mongoose.Schema(
       required: true,
       unique: true,
       lowercase: true,
-      trime: true,
+      trim: true, // Fixed typo from 'trime' to 'trim'
     },
     password: {
       type: String,
