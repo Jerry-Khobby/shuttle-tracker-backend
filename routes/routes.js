@@ -256,4 +256,143 @@ router.get("/auth/google/signout", googleAuthControllers.googleSignOut);
 
 router.post("/auth/signup/drivers", driversController.createDriver);
 
+/**
+ * @swagger
+ * /auth/login/drivers:
+ *   post:
+ *     summary: Driver Login
+ *     tags: [Authentication of Drivers]
+ *     description: Logs in a driver by validating their email and password, and sends a one-time password (OTP) to their email for further verification.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: The driver's email address.
+ *                 example: "driver@example.com"
+ *               password:
+ *                 type: string
+ *                 description: The driver's password (minimum 8 characters, at least one letter, one number, and one special character).
+ *                 example: "Password123!"
+ *     responses:
+ *       '200':
+ *         description: OTP sent successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "OTP sent to your email. Please verify it."
+ *       '400':
+ *         description: Invalid email or password format.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Invalid email format"
+ *       '401':
+ *         description: Unauthorized - Invalid credentials.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Invalid credentials"
+ *       '500':
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Internal server error"
+ */
+
+router.post("/auth/login/drivers", driversController.driverLogin);
+/**
+ * @swagger
+ * /auth/verify-otp/drivers:
+ *   post:
+ *     summary: Verify OTP
+ *     tags: [Authentication of Drivers]
+ *     description: Verifies the OTP sent to the driver's email and, if valid, logs the driver in by generating a JWT.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: The driver's email address.
+ *                 example: "driver@example.com"
+ *               otp:
+ *                 type: string
+ *                 description: The one-time password sent to the driver's email.
+ *                 example: "123456"
+ *     responses:
+ *       '200':
+ *         description: Login successful.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Login successful"
+ *                 token:
+ *                   type: string
+ *                   description: JWT token for the authenticated driver.
+ *                   example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *       '400':
+ *         description: Invalid or expired OTP.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Invalid or expired OTP"
+ *       '404':
+ *         description: User not found.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "User not found"
+ *       '500':
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "OTP verification failed"
+ */
+
+router.post("/auth/verify-otp/drivers", driversController.verifyOTP);
+
 module.exports = router;
