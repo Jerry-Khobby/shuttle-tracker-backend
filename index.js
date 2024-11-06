@@ -19,6 +19,11 @@ app.use(
     secret: process.env.SESSION_SECRET,
     saveUninitialized: true, // Fixed the typo (Unitialized -> Uninitialized)
     resave: false,
+    cookie: {
+      maxAge: 5 * 60 * 1000,
+      secure: process.env.NODE_ENV === "production", // Only use HTTPS in production
+      httpOnly: true,
+    },
   })
 );
 app.use(cors());

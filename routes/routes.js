@@ -7,7 +7,7 @@ const driversController = require("../controllers/driver-registration");
 /**
  * @swagger
  * tags:
- *   name: Authentication
+ *   name: Authentication of Users
  *   description: Google OAuth authentication for Shuttle Tracker
  */
 

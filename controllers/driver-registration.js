@@ -74,10 +74,12 @@ exports.driverLogin = async (req, res) => {
   if (!password || !email) {
     return res.status(400).json({ error: "All fields are required" });
   }
+
   const emailRegrex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegrex.test(email)) {
     return res.status(400).json({ error: "Invalid email format" });
   }
+
   const passwordRegrex =
     /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
   if (!passwordRegrex.test(password)) {
@@ -86,8 +88,9 @@ exports.driverLogin = async (req, res) => {
         "Password must be at least 8 characters long and contain at least one letter, one digit, and one special character",
     });
   }
+
   try {
-    const user = await User.findOne({ email });
+    const user = await Drivers.findOne({ email });
     if (!user) {
       return res.status(401).json({ error: "Invalid credentials" });
     }
@@ -101,8 +104,11 @@ exports.driverLogin = async (req, res) => {
       encoding: "base32",
     });
 
-    // Store OTP temporarily (In-memory or in database)
-    req.session.otp = otp; // Use session or a temporary storage
+    // Store OTP and user ID in session
+    req.session.otp = otp;
+    req.session.userId = user._id;
+
+  /*   console.log(req.session.otp); */
 
     // Send OTP via email
     const transporter = nodemailer.createTransport({
@@ -137,42 +143,60 @@ exports.driverLogin = async (req, res) => {
     `,
     };
 
-    console.log(otp);
+   /*  console.log(otp); */
 
     await transporter.sendMail(mailOptions);
 
-    // Send the response indicating the OTP was sent
     return res.status(200).json({
-      message:
-        "OTP sent to your email. Please verify it. Please go into the verify route and verify the OTP to ensure that you are logged in",
+      message: "OTP sent to your email. Please verify it.",
     });
   } catch (error) {
+    console.error(error);
     return res.status(500).json({ error: "Internal server error" });
   }
 };
 
 exports.verifyOTP = async (req, res) => {
-  const { email, otp } = req.body;
+  const { otp } = req.body;
 
-  console.log(otp);
+  // Retrieve OTP and user ID from session
+  const sessionOtp = req.session.otp;
+  const userId = req.session.userId;
+
+  if (!sessionOtp || !userId) {
+    return res
+      .status(400)
+      .json({ error: "OTP session expired. Please login again." });
+  }
+
   try {
-    const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ error: "User not found" });
-
     // Verify OTP
     const isVerified = speakeasy.totp.verify({
       secret: process.env.OTP_SECRET,
       encoding: "base32",
       token: otp,
-      window: 2, // Adjust the window to allow for a time drift
+      window: 2,
     });
 
-    if (!isVerified) {
+    if (!isVerified || otp !== sessionOtp) {
       return res.status(400).json({ error: "Invalid or expired OTP" });
     }
 
+    // Find the user based on the stored userId
+    const user = await Drivers.findById(userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
     // OTP is valid, generate JWT
-    const token = generateToken(user);
+    const token = generateToken({
+      _id: user._id,
+      email: user.email,
+    });
+
+    req.session.cookie.maxAge = 5 * 60 * 1000; // 5 minutes
+    // Clear OTP and userId from session after successful login
+    req.session.otp = null;
+    req.session.userId = null;
+
     res.status(200).json({ message: "Login successful", token });
   } catch (error) {
     res.status(500).json({ error: "OTP verification failed" });
