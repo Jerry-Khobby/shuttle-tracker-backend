@@ -395,4 +395,36 @@ router.post("/auth/login/drivers", driversController.driverLogin);
 
 router.post("/auth/verify-otp/drivers", driversController.verifyOTP);
 
+/**
+ * @swagger
+ * /auth/signout/drivers:
+ *   get:
+ *     summary: Sign out driver
+ *     tags: [Authentication of Drivers]
+ *     description: Logs the driver out by clearing the session and invalidating the JWT on the client side.
+ *     responses:
+ *       '200':
+ *         description: Signout successful.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Signout successful. JWT token should be cleared from client storage."
+ *       '500':
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Failed to sign out. Please try again."
+ */
+
+router.get("/auth/signout/drivers", driversController.driverSignout);
+
 module.exports = router;

@@ -3,6 +3,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const speakeasy = require("speakeasy");
 const nodemailer = require("nodemailer");
+const BlackList = require("../models/BlackList");
 
 const generateToken = (payload) => {
   const secretKey = process.env.JWT_SECRET;
@@ -108,7 +109,7 @@ exports.driverLogin = async (req, res) => {
     req.session.otp = otp;
     req.session.userId = user._id;
 
-  /*   console.log(req.session.otp); */
+    /*   console.log(req.session.otp); */
 
     // Send OTP via email
     const transporter = nodemailer.createTransport({
@@ -143,7 +144,7 @@ exports.driverLogin = async (req, res) => {
     `,
     };
 
-   /*  console.log(otp); */
+    /*  console.log(otp); */
 
     await transporter.sendMail(mailOptions);
 
@@ -203,4 +204,28 @@ exports.verifyOTP = async (req, res) => {
   }
 };
 
-exports.driverSignout = async () => {};
+exports.driverSignout = async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split("")[1];
+    if (token) {
+      await TokenBlacklist.create({
+        token,
+        expiresAt: new Date(Date.now() + 3600 * 1000),
+      });
+    }
+
+    req.session.destroy((err) => {
+      if (err) {
+        return res
+          .status(500)
+          .json({ error: "Failed to sign out. Please try again later " });
+      }
+      res.clearCookie("connect.sid");
+
+      res.status(200).json({ message: "Signout successful" });
+    });
+  } catch (error) {
+    console.error("Signout error", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
